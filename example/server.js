@@ -70,10 +70,30 @@ function init() {
             res.status(500).send(err.message);
         }
     });
-    // app.put("/:id", fooCrud.update)
-    // app.delete("/:id", fooCrud.deleteById)
-    // app.delete("/utils/deleteMany", fooCrud.deleteMany)
-    // app.post("/utils/aggregate", fooCrud.aggregate)
+    app.put("/:id", async (req, res) => {
+        try {
+            let result = await deptCRUD.update(req.params.id, req.body, req.query);
+            res.json(result);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
+    app.delete("/:id", async (req, res) => {
+        try {
+            let result = await deptCRUD.delete(req.params.id, req.query);
+            res.json(result);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
+    app.delete("/utils/deleteMany", async (req, res) => {
+        try {
+            let result = await deptCRUD.deleteMany(req.body, req.query);
+            res.json(result);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
 
     app.listen(port, (err) => {
         if (!err) {

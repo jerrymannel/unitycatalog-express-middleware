@@ -87,7 +87,9 @@ function orderByClause(fields, defaultField, sort) {
 }
 
 const STRING_TYPES = ['string', 'char', 'varchar', 'text'];
+
 function insertManyStatement(fields, data) {
+	logger.trace(`insertManyStatement(): fields : ${JSON.stringify(fields)}, data : ${JSON.stringify(data)}`);
 	const cols = Object.keys(fields);
 	let values = [];
 	const valuesList = [];
@@ -107,9 +109,35 @@ function insertManyStatement(fields, data) {
 		values = [];
 	})
 
+	logger.trace(`insertManyStatement(): valuesList : ${valuesList}`);
 	if (valuesList.length > 0) {
-		return `(${cols.join(', ')}) VALUES (${valuesList.join('), (')})`;
+		const generatedInsertManyStatement = `(${cols.join(', ')}) VALUES (${valuesList.join('), (')})`;
+		logger.trace(`insertManyStatement(): generatedInsertManyStatement : ${generatedInsertManyStatement}`);
+		return generatedInsertManyStatement;
 	}
+	logger.trace(`insertManyStatement(): Returning null.`);
+	return null;
+}
+
+function updateStatement(fields, data) {
+	logger.trace(`updateStatement(): fields : ${JSON.stringify(fields)}, data : ${JSON.stringify(data)}`);
+	const sets = [];
+	Object.keys(data).forEach(dataKey => {
+		const type = fields[dataKey].toLowerCase();
+		if (type) {
+			if (STRING_TYPES.includes(type)) {
+				sets.push(`${dataKey}='${data[dataKey]}'`);
+			} else {
+				sets.push(`${dataKey}=${data[dataKey]}`);
+			}
+		}
+	});
+	if (sets.length > 0) {
+		const generatedUpdateStatement = 'SET ' + sets.join(', ');
+		logger.trace(`updateStatement(): generatedUpdateStatement : ${generatedUpdateStatement}`);
+		return generatedUpdateStatement;
+	}
+	logger.trace(`updateStatement(): Returning null.`);
 	return null;
 }
 
@@ -119,5 +147,6 @@ module.exports = {
 	selectClause,
 	limitClause,
 	orderByClause,
-	insertManyStatement
+	insertManyStatement,
+	updateStatement
 };

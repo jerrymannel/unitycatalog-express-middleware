@@ -174,4 +174,80 @@ UnityCatalogCRUD.prototype.create = async function (data) {
 	}
 }
 
+UnityCatalogCRUD.prototype.update = async function (value, data, options) {
+	try {
+		logger.debug(`update(): Updating row with value ${value}`);
+		logger.trace(`update(): Data to update :: ${JSON.stringify(data)}`);
+		logger.trace(`update(): Options :: ${JSON.stringify(options)}`);
+
+		if (!options.fieldName) {
+			logger.trace(`update(): Field name not provided. Using default field name`);
+			options.fieldName = this.defaultField;
+		}
+
+		const stmt = utils.updateStatement(this.fields, data);
+		if (!stmt) {
+			logger.error(`update(): No data to update`);
+			throw new Error('No data to update');
+		}
+
+		let sql = `UPDATE ${this.table} ${stmt} WHERE ${options.fieldName}='${value}'`;
+		logger.trace(`update(): SQL statement for update :: ${sql}`);
+
+		const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
+		const result = await queryOperation.fetchAll();
+		await queryOperation.close();
+		return result[0];
+	} catch (err) {
+		logger.error(`update(): Error while updating row with value ${value} :: ${err}`);
+		throw err;
+	}
+}
+
+UnityCatalogCRUD.prototype.delete = async function (value, options) {
+	try {
+		logger.debug(`delete(): Deleting row with value ${value}`);
+		logger.trace(`delete(): Options :: ${JSON.stringify(options)}`);
+
+		if (!options.fieldName) {
+			logger.trace(`delete(): Field name not provided. Using default field name`);
+			options.fieldName = this.defaultField;
+		}
+
+		let sql = `DELETE FROM ${this.table} WHERE ${options.fieldName}='${value}'`;
+		logger.trace(`delete(): SQL statement for delete :: ${sql}`);
+
+		const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
+		const result = await queryOperation.fetchAll();
+		await queryOperation.close();
+		return result[0];
+	} catch (err) {
+		logger.error(`delete(): Error while deleting row with value ${value} :: ${err}`);
+		throw err;
+	}
+}
+
+UnityCatalogCRUD.prototype.deleteMany = async function (values, options) {
+	try {
+		logger.debug(`deleteMany(): Deleting rows with values ${values}`);
+		logger.trace(`deleteMany(): Options :: ${JSON.stringify(options)}`);
+
+		if (!options.fieldName) {
+			logger.trace(`deleteMany(): Field name not provided. Using default field name`);
+			options.fieldName = this.defaultField;
+		}
+
+		let sql = `DELETE FROM ${this.table} WHERE ${options.fieldName} IN (${values.map(value => `'${value}'`).join(',')})`;
+		logger.trace(`deleteMany(): SQL statement for delete :: ${sql}`);
+
+		const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
+		const result = await queryOperation.fetchAll();
+		await queryOperation.close();
+		return result[0];
+	} catch (err) {
+		logger.error(`deleteMany(): Error while deleting rows with values ${values} :: ${err}`);
+		throw err;
+	}
+}
+
 module.exports = UnityCatalogCRUD;
