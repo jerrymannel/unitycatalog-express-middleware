@@ -1,7 +1,7 @@
 {
   "name": "unitycatalog-express-middleware",
   "version": "1.0.0",
-  "description": "databricks Unity Catalog express middleware",
+  "description": "databricks Unity Catalog express middlweare",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
