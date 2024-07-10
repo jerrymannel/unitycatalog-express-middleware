@@ -1,5 +1,5 @@
 {
-  "name": "unitycatalog-express-middelware",
+  "name": "unitycatalog-express-middleware",
   "version": "1.0.0",
   "description": "databricks Unity Catalog express middleware",
   "main": "app.js",
