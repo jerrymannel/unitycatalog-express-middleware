@@ -1,0 +1,19 @@
+{
+  "name": "unitycatalog-express-middelware",
+  "version": "1.0.0",
+  "description": "databricks Unity Catalog express middleware",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@databricks/sql": "^1.8.4",
+    "express": "^4.19.2",
+    "lodash": "^4.17.21",
+    "pino": "^9.2.0",
+    "where-in-json": "^1.1.1"
+  }
+}
