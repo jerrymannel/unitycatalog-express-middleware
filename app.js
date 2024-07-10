@@ -89,75 +89,89 @@ UnityCatalogCRUD.prototype.list = async function (options) {
 }
 
 UnityCatalogCRUD.prototype.fetchOne = async function (value, options) {
-	logger.debug(`fetchOne(): Finding row with value ${value}`);
-	logger.trace(`fetchOne(): Options :: ${JSON.stringify(options)}`);
+	try {
+		logger.debug(`fetchOne(): Finding row with value ${value}`);
+		logger.trace(`fetchOne(): Options :: ${JSON.stringify(options)}`);
 
-	if (!options.fieldName) {
-		logger.trace(`fetchOne(): Field name not provided. Using default field name`);
-		options.fieldName = this.defaultField;
+		if (!options.fieldName) {
+			logger.trace(`fetchOne(): Field name not provided. Using default field name`);
+			options.fieldName = this.defaultField;
+		}
+
+		const selectClause = utils.selectClause(this.fields, options?.select) || '*';
+		let sql = `SELECT ${selectClause} FROM ${this.table} WHERE ${options.fieldName}='${value}'`;
+		logger.trace(`fetchOne(): Generated SQL Query :: ${sql}`);
+
+		const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
+		const result = await queryOperation.fetchAll();
+		await queryOperation.close();
+		logger.debug(`fetchOne(): List query successful`);
+		if (result.length === 0) return null;
+		return result[0];
+	} catch (err) {
+		logger.error(`fetchOne(): Error while fetching row with value ${value} :: ${err}`);
+		throw err;
 	}
-
-	const selectClause = utils.selectClause(this.fields, options?.select) || '*';
-	let sql = `SELECT ${selectClause} FROM ${this.table} WHERE ${options.fieldName}='${value}'`;
-	logger.trace(`fetchOne(): Generated SQL Query :: ${sql}`);
-
-	const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
-	const result = await queryOperation.fetchAll();
-	await queryOperation.close();
-	logger.debug(`fetchOne(): List query successful`);
-	if (result.length === 0) return null;
-	return result[0];
 }
 
 UnityCatalogCRUD.prototype.count = async function (options) {
-	logger.debug(`count(): Counting rows in DB`);
-	logger.trace(`count(): Options :: ${JSON.stringify(options)}`);
+	try {
+		logger.debug(`count(): Counting rows in DB`);
+		logger.trace(`count(): Options :: ${JSON.stringify(options)}`);
 
-	let whereClause;
-	if (options?.filter && !_.isEmpty(options.filter)) {
-		whereClause = utils.whereClause(options?.filter);
+		let whereClause;
+		if (options?.filter && !_.isEmpty(options.filter)) {
+			whereClause = utils.whereClause(options?.filter);
+		}
+		logger.trace(`count(): Where clause :: ${whereClause}`);
+
+		let sql = `SELECT COUNT(*) as count FROM ${this.table}`;
+		if (whereClause) {
+			sql += whereClause;
+		}
+		logger.trace(`count(): Generated SQL Query :: ${sql}`);
+
+		const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
+		const result = await queryOperation.fetchAll();
+		await queryOperation.close();
+		logger.debug(`count(): Count query successful`);
+		return result[0];
+	} catch (err) {
+		logger.error(`count(): Error while counting rows in DB :: ${err}`);
+		throw err;
 	}
-	logger.trace(`count(): Where clause :: ${whereClause}`);
-
-	let sql = `SELECT COUNT(*) as count FROM ${this.table}`;
-	if (whereClause) {
-		sql += whereClause;
-	}
-	logger.trace(`count(): Generated SQL Query :: ${sql}`);
-
-	const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
-	const result = await queryOperation.fetchAll();
-	await queryOperation.close();
-	logger.debug(`count(): Count query successful`);
-	return result[0];
 }
 
 UnityCatalogCRUD.prototype.create = async function (data) {
-	logger.debug(`Creating new row in DB`);
-	logger.trace(`Data to create :: ${JSON.stringify(data)}`);
+	try {
+		logger.debug(`create(): Creating new row in DB`);
+		logger.trace(`create(): Data to create :: ${JSON.stringify(data)}`);
 
-	if (!data) {
-		throw new Error('No data to insert');
+		if (!data) {
+			logger.error(`create(): No data to insert`);
+			throw new Error('No data to insert');
+		}
+		if (!Array.isArray(data)) {
+			logger.trace(`create(): Data is not an array. Converting to array`);
+			data = [data];
+		}
+
+		const stmt = utils.insertManyStatement(this.fields, data);
+		if (!stmt) {
+			logger.error(`create(): No data to insert`);
+			throw new Error('No data to insert');
+		}
+		let sql = `INSERT INTO ${this.table} ${stmt}`;
+		logger.trace(`create(): SQL statement for insert :: ${sql}`);
+
+		const queryOperation = await this.session.executeStatement(sql, { runAsync: true });
+		const result = await queryOperation.fetchAll();
+		await queryOperation.close();
+		return result[0];
+	} catch (err) {
+		logger.error(`create(): Error while creating new row in DB :: ${err}`);
+		throw err;
 	}
-
-	if (!Array.isArray(data)) {
-		data = [data];
-	}
-
-	const stmt = utils.insertManyStatement(this.fields, data);
-	if (!stmt) {
-		throw new Error('No data to insert');
-	}
-
-
-	// const queryOperation = await this.session.executeStatement(
-	// 	`INSERT INTO ${this.tableName} VALUES ${data}`,
-	// 	{ runAsync: true }
-	// );
-
-	// const result = await queryOperation.fetchAll();
-	// await queryOperation.close();
-	// return result;
 }
 
 module.exports = UnityCatalogCRUD;

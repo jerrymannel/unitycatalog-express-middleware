@@ -62,7 +62,14 @@ function init() {
             res.status(500).send(err.message);
         }
     });
-    // app.post("/", fooCrud.create)
+    app.post("/", async (req, res) => {
+        try {
+            let result = await deptCRUD.create(req.body);
+            res.json(result);
+        } catch (err) {
+            res.status(500).send(err.message);
+        }
+    });
     // app.put("/:id", fooCrud.update)
     // app.delete("/:id", fooCrud.deleteById)
     // app.delete("/utils/deleteMany", fooCrud.deleteMany)

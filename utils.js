@@ -86,25 +86,21 @@ function orderByClause(fields, defaultField, sort) {
 	return null;
 }
 
+const STRING_TYPES = ['string', 'char', 'varchar', 'text'];
 function insertManyStatement(fields, data) {
-	const cols = [];
+	const cols = Object.keys(fields);
 	let values = [];
 	const valuesList = [];
-	fields.forEach(item => {
-		cols.push(item.key);
-	});
 	data.forEach(obj => {
-		fields.forEach(item => {
-			const key = item.key.split('___').join('.');
-			const val = _.get(obj, key);
-			if (val) {
-				if (item.type === 'TEXT' || item.type.startsWith('VARCHAR') || item.type === 'BLOB') {
-					values.push(`'${escape(val)}'`);
-				} else {
-					values.push(val);
-				}
+		cols.forEach(item => {
+			const type = fields[item].toLowerCase();
+			const val = obj[item];
+			if (val === undefined || val === null) {
+				values.push('NULL');
+			} else if (STRING_TYPES.includes(type)) {
+				values.push(`'${val}'`);
 			} else {
-				values.push(`''`);
+				values.push(val);
 			}
 		});
 		valuesList.push(values.join(', '));
