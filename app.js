@@ -28,25 +28,6 @@ function UnityCatalogCRUD(options) {
 	this.fields = options.fields;
 	this.session = null;
 	this.defaultField = options.defaultField;
-	this.connectionOptions = {
-		token: options.connectionDetails.token,
-		host: options.connectionDetails.host,
-		path: options.connectionDetails.path
-	};
-}
-
-UnityCatalogCRUD.prototype.connect = async function () {
-	try {
-		logger.debug('Connecting to Databricks SQL...');
-		const dbSQLClient = new DBSQLClient();
-		const client = await dbSQLClient.connect(this.connectionOptions);
-		logger.debug('Connected to Databricks SQL.');
-		this.session = await client.openSession();
-		logger.debug('Session opened.');
-	} catch (err) {
-		logger.error(`Error while connecting to Databricks SQL :: ${err}`);
-		throw err;
-	}
 }
 
 UnityCatalogCRUD.prototype.list = async function (options) {

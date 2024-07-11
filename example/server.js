@@ -1,11 +1,18 @@
 "use strict"
-const express = require("express")
+const { DBSQLClient } = require('@databricks/sql');
+const express = require("express");
 const port = process.env.PORT || 8080
 
 const serverHostname = process.env.DATABRICKS_SERVER_HOSTNAME;
 const httpPath = process.env.DATABRICKS_HTTP_PATH;
 const token = process.env.DATABRICKS_TOKEN;
 const table = 'batman.training.department';
+
+const connectionOptions = {
+    token: token,
+    host: serverHostname,
+    path: httpPath
+};
 
 const UCCRUD = require("../app");
 
@@ -19,11 +26,7 @@ const options = {
     "table": table,
     "fields": columns,
     "defaultField": "deptcode",
-    "connectionDetails": {
-        token: token,
-        host: serverHostname,
-        path: httpPath
-    }
+    "session": null,
 }
 
 var deptCRUD = new UCCRUD(options);
@@ -103,7 +106,21 @@ function init() {
     })
 }
 
+async function connect() {
+    try {
+        console.log('Connecting to Databricks SQL...');
+        const dbSQLClient = new DBSQLClient();
+        const client = await dbSQLClient.connect(connectionOptions);
+        console.log('Connected to Databricks SQL.');
+        deptCRUD.session = await client.openSession();
+        console.log('Session opened.');
+    } catch (err) {
+        console.log(`Error while connecting to Databricks SQL :: ${err}`);
+        throw err;
+    }
+}
+
 (async () => {
-    await deptCRUD.connect();
+    await connect();
     init();
 })();
