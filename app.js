@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const version = require('./package.json').version;
 
-global.logger = pino({
+const logger = pino({
 	level: process.env.LOG_LEVEL || 'info',
 	formatters: {
 		level: (label) => {
@@ -17,9 +17,8 @@ global.logger = pino({
 	timestamp: pino.stdTimeFunctions.isoTime,
 });
 
-let logger = global.logger;
-
-const utils = require('./utils');
+const utils = require('./utils')
+utils.init(logger);
 
 function UnityCatalogCRUD(options) {
 	logger.debug('UnityCatalogCRUD constructor called');

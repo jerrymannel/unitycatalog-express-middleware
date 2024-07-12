@@ -1,7 +1,7 @@
 const parser = require('where-in-json');
 const _ = require('lodash');
 
-let logger = global.logger;
+let logger;
 
 function whereClause(filter) {
 	try {
@@ -141,8 +141,12 @@ function updateStatement(fields, data) {
 	return null;
 }
 
+function init(_logger) {
+	logger = _logger;
+}
 
 module.exports = {
+	init,
 	whereClause,
 	selectClause,
 	limitClause,

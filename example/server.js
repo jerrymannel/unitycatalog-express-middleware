@@ -1,7 +1,7 @@
 "use strict"
 const { DBSQLClient } = require('@databricks/sql');
 const express = require("express");
-const port = process.env.PORT || 8080
+const port = process.env.PORT || 18080;
 
 const serverHostname = process.env.DATABRICKS_SERVER_HOSTNAME;
 const httpPath = process.env.DATABRICKS_HTTP_PATH;
